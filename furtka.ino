@@ -1,107 +1,86 @@
 
-#define pin_czujnika 2
-#define pin_domofonu 4
-#define pin_przycisku 6
-#define pin_zamka 8
-#define pin_kontrolki 13
+#define sensor_pin 2
+#define sensor_intercom 4
+#define button_pin 6
+#define lock_pin 8
+#define indicator_pin 13
 
-int minuta = 0;
-int poprzednia_minuta = 0;
-volatile bool sygnal_domofonu = false;
-volatile bool sygnal_czujnika = false;
-volatile bool furtka_otwarta;
-volatile bool zamek_zwolniony = false;
-volatile bool czekaj_na_zamkniecie = false;
-volatile bool stan_przycisku;
-volatile bool stan_diody = true;
-volatile bool sygnal_otwierania_aktywny = false;
-unsigned long poprzedni_czas = 0;
-unsigned long biezacy_czas;
-
-
+int minute = 0;
+int previous_minute = 0;
+volatile bool intercom_signal = false;
+volatile bool sensor_signal = false;
+volatile bool door_open;
+volatile bool lock_relased = false;
+volatile bool wait_for_close = false;
+volatile bool button_state;
+volatile bool led_state = true;
+volatile bool open_signal_active = false;
+unsigned long previous_time = 0;
+unsigned long current_time;
 
 volatile bool flaga = false;
 volatile bool buzzer_aktywny = false;
 
-
 void setup() 
-{
-  //Serial.begin(9600); 
-  pinMode(pin_czujnika,INPUT_PULLUP);
-  pinMode(pin_domofonu,INPUT_PULLUP);
-  pinMode(pin_przycisku,INPUT_PULLUP);
+{ 
+  pinMode(sensor_pin,INPUT_PULLUP);
+  pinMode(sensor_intercom,INPUT_PULLUP);
+  pinMode(button_pin,INPUT_PULLUP);
   pinMode(pin_kontrolki,OUTPUT);
-  pinMode(pin_zamka,OUTPUT);
+  pinMode(lock_pin,OUTPUT);
 
-  furtka_otwarta = !digitalRead(pin_czujnika);
-  digitalWrite(pin_zamka,HIGH);
+  door_open = !digitalRead(sensor_pin);
+  digitalWrite(lock_pin,HIGH);
   digitalWrite(pin_kontrolki,LOW);
   
 }
 
 void loop()
 {
-  furtka_otwarta=!digitalRead(pin_czujnika);
-  if (furtka_otwarta)
+  door_open=!digitalRead(sensor_pin);
+  if (door_open)
      {
-     //  if (!czekaj_na_zamkniecie) 
-       
-      // {
-        
-        if (poprzedni_czas<biezacy_czas-250)
+     
+        if (previous_time<current_time-250)
            {
-              poprzedni_czas=biezacy_czas;
-              if (stan_diody==LOW) {stan_diody=HIGH;} else {stan_diody=LOW;}
-               digitalWrite(pin_kontrolki,stan_diody);
+              previous_time=current_time;
+              if (led_state==LOW) {led_state=HIGH;} else {led_state=LOW;}
+               digitalWrite(pin_kontrolki,led_state);
             } 
 
-        
-        //digitalWrite(pin_kontrolki,HIGH);
-        
-        
-        
-       // }
-       if (zamek_zwolniony) {czekaj_na_zamkniecie=true;}
+       if (lock_relased) {wait_for_close=true;}
      }
    else
      {
-       if (!zamek_zwolniony) {digitalWrite(pin_kontrolki,LOW);}
-       if ((zamek_zwolniony)&&(czekaj_na_zamkniecie)) {zamek_zwolniony=false; czekaj_na_zamkniecie=false;}
+       if (!lock_relased) {digitalWrite(pin_kontrolki,LOW);}
+       if ((lock_relased)&&(wait_for_close)) {lock_relased=false; wait_for_close=false;}
       }
-  if (!furtka_otwarta)
+  if (!door_open)
      {
-         if ((digitalRead(pin_przycisku)==LOW)||(digitalRead(pin_domofonu)==LOW))
+         if ((digitalRead(button_pin)==LOW)||(digitalRead(sensor_intercom)==LOW))
           {
-            if ((!sygnal_otwierania_aktywny)&&(!zamek_zwolniony))
+            if ((!open_signal_active)&&(!lock_relased))
                 {
                   digitalWrite(pin_kontrolki,HIGH);
-                  digitalWrite(pin_zamka,LOW);
+                  digitalWrite(lock_pin,LOW);
                   delay(500);
-                  digitalWrite(pin_zamka,HIGH);
-                  sygnal_otwierania_aktywny=true;
-                  zamek_zwolniony=true;
+                  digitalWrite(lock_pin,HIGH);
+                  open_signal_active=true;
+                  lock_relased=true;
                  } else {delay(20);}
           }
          else
           {
-            sygnal_otwierania_aktywny=false;
+            open_signal_active=false;
             delay(20);
           }
+          }
      
-     }
-     
- biezacy_czas=millis();  
- if ((zamek_zwolniony)&&(!furtka_otwarta)) 
+ current_time=millis();  
+ if ((lock_relased)&&(!door_open)) 
  {
-  //  if (poprzedni_czas<biezacy_czas-250)
-  //   {
-  //       poprzedni_czas=biezacy_czas;
-  //       if (stan_diody==LOW) {stan_diody=HIGH;} else {stan_diody=LOW;}
-  //        digitalWrite(pin_kontrolki,stan_diody);
-  //    }  
-  digitalWrite(pin_kontrolki,HIGH); 
- 
-  } 
+   digitalWrite(pin_kontrolki,HIGH); 
+   } 
 }
 
 
