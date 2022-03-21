@@ -18,15 +18,11 @@ volatile bool open_signal_active = false;
 unsigned long previous_time = 0;
 unsigned long current_time;
 
-
-
 volatile bool flaga = false;
 volatile bool buzzer_aktywny = false;
 
-
 void setup() 
-{
-  //Serial.begin(9600); 
+{ 
   pinMode(sensor_pin,INPUT_PULLUP);
   pinMode(sensor_intercom,INPUT_PULLUP);
   pinMode(button_pin,INPUT_PULLUP);
@@ -44,10 +40,7 @@ void loop()
   door_open=!digitalRead(sensor_pin);
   if (door_open)
      {
-     //  if (!wait_for_close) 
-       
-      // {
-        
+     
         if (previous_time<current_time-250)
            {
               previous_time=current_time;
@@ -55,12 +48,6 @@ void loop()
                digitalWrite(pin_kontrolki,led_state);
             } 
 
-        
-        //digitalWrite(pin_kontrolki,HIGH);
-        
-        
-        
-       // }
        if (lock_relased) {wait_for_close=true;}
      }
    else
@@ -87,21 +74,13 @@ void loop()
             open_signal_active=false;
             delay(20);
           }
-     
-     }
+          }
      
  current_time=millis();  
  if ((lock_relased)&&(!door_open)) 
  {
-  //  if (previous_time<current_time-250)
-  //   {
-  //       previous_time=current_time;
-  //       if (led_state==LOW) {led_state=HIGH;} else {led_state=LOW;}
-  //        digitalWrite(pin_kontrolki,led_state);
-  //    }  
-  digitalWrite(pin_kontrolki,HIGH); 
- 
-  } 
+   digitalWrite(pin_kontrolki,HIGH); 
+   } 
 }
 
 
